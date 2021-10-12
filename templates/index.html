@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        var socket = io();
+        setInterval(function() {
+            if (socket.connected) {
+                var emit = { data: Math.round((Math.random() * 10)) };
+                socket.emit('my event', emit);
+                var text = document.createTextNode("sent: " + emit.data);
+                var li = document.createElement("li");
+                li.appendChild(text);
+                document.getElementById("list").prepend(li);
+            }
+        }, 100)
+        socket.on('my response', function(msg) {
+            var text = document.createTextNode(msg.data);
+            var li = document.createElement("li");
+            li.appendChild(text);
+            document.getElementById("list").prepend(li);
+        });
+    </script>
+  </head>
+  <body>
+        <div id="img-container">
+          <img src="{{ url_for('stream') }}"></img>
+        </div>
+        <ul id="list"></ul>
+  </body>
+</html>
