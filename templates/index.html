@@ -142,16 +142,20 @@
             }
         }, 100)
         socket.on('pos', function(msg) {
-            var text = document.createTextNode(msg.data);
-            var el = document.createElement("div");
-            el.innerHTML = `
-            <tr>
-                <td style="width: 15%;">12:12:12</td>
-                <td style="width: 10%;">404</td>
-                <td style="width: 75%;">${msg.data}</td>
-            </tr>`;
+            var table = document.getElementsByClassName("inner-table").item(0).firstElementChild;
+            var row = table.insertRow(0);
+            
+            var tsCell = row.insertCell(0);
+            var codeCell = row.insertCell(1);
+            var msgCell = row.insertCell(2);
+            
+            tsCell.style.width = "15%";
+            codeCell.style.width = "10%";
+            msgCell.style.width = "75%";
 
-            document.getElementsByClassName("inner-table").item(0).prepend(el);
+            tsCell.innerHTML = new Date().toLocaleTimeString();
+            codeCell.innerHTML = "1";
+            msgCell.innerHTML = msg.data;
         });
     </script>
 </head>
