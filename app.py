@@ -4,7 +4,14 @@ import numpy as np
 import cv2
 import threading
 import random
+import time
+import math
+import time
+from networktables import NetworkTables
+NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected =", connected), immediateNotify=True)
+NetworkTables.initialize(server="roborio-6644-frc.local")
 
+wsTable = NetworkTables.getTable("testws")
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -12,16 +19,10 @@ socketio = SocketIO(app)
 def index():
     return render_template('index.html')
 
-@socketio.on('my event')
+@socketio.on('pos')
 def test_message(message):
-    print(message)
-    emit('my response', {'data': 'server echoes: ' + str(message['data'])})
-
-@socketio.on('my broadcast event')
-def test_message(message):
-    # print(message)
-    emit('my response', {'data': 'server echoes: ' + str(message['data'])}, broadcast=True)
-
+    emit('pos', {'data': str(wsTable.getNumberArray("pos", [0, 0]))})
+    
 @socketio.on('connect')
 def test_connect():
     print('Client Connected')
@@ -31,17 +32,17 @@ def test_connect():
 def test_disconnect():
     print('Client Disconnected')
 
-def gen_frames():  
+def gen_frames():
     while True:
         frame = np.zeros((15, 30, 3), np.uint8)
-        frame.fill(random.randint(0, 254))
+        frame.fill((math.sin(time.time() * 10)+1) * 128)
         ret, buffer = cv2.imencode('.jpg', frame)
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 @app.route('/stream')
 def stream():
-    return Response(threading.start_new_thread(gen_frames), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0')
