@@ -12,3 +12,4 @@ wsTable.addEntryListener(changed)
 
 while True:
     time.sleep(1)
+    print(wsTable.getNumberArray("pos", [0, 0]))
