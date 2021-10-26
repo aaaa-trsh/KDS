@@ -82,7 +82,7 @@
 
     table tr td {
         padding: .2em 0 .1em 0.5em;
-        /* word-wrap: break-word; */
+        white-space: nowrap;
         text-align: left;
         flex: 1;
     }
@@ -134,17 +134,22 @@
 
     </style>
     <script src="../static/scripts/socket.io.js"></script>
+    <script src="../static/scripts/point.js"></script>
     <script type="text/javascript">
         var socket = io();
+        let points = [];
+
         setInterval(function() {
             if (socket.connected) {
                 socket.emit('pos', {});
             }
-        }, 100)
+        }, 20)
+
         socket.on('pos', function(msg) {
+            data = JSON.parse(msg.data);
             var table = document.getElementsByClassName("inner-table").item(0).firstElementChild;
             var row = table.insertRow(0);
-            
+            console.log(data[0])
             var tsCell = row.insertCell(0);
             var codeCell = row.insertCell(1);
             var msgCell = row.insertCell(2);
@@ -153,10 +158,57 @@
             codeCell.style.width = "10%";
             msgCell.style.width = "75%";
 
-            tsCell.innerHTML = new Date().toLocaleTimeString();
+            tsCell.innerHTML = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
             codeCell.innerHTML = "1";
             msgCell.innerHTML = msg.data;
+
+            while (table.rows.length > 10) {
+                table.deleteRow(table.rows.length - 1);
+            }
+
+            points.push(new Point(data[0], data[1]));
+            points = points.slice(-10);
         });
+        
+        window.onload = function() {
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const pxToFeet = 50;
+            const screenSpaceToWorldSpace = (point) => {
+                return Point.add(Point.mul(point, pxToFeet), new Point(canvas.width/2, canvas.height/2));
+            }
+            let canvasWidthUnits = canvas.width/pxToFeet;
+            let canvasHeightUnits = canvas.height/pxToFeet;
+            
+            function drawLine(a, b) {
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+                ctx.closePath();
+            } 
+
+            update();
+
+            window.onresize = function() {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+                canvasWidthUnits = canvas.width / pxToFeet;
+                canvasHeightUnits = canvas.height / pxToFeet;
+            }
+            window.onresize();
+            
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "white";
+                ctx.lineThickness = 2;
+                // console.log(points)
+                for (let i = 0; i < points.length - 1; i++) {
+                    drawLine(screenSpaceToWorldSpace(points[i]), screenSpaceToWorldSpace(points[i+1]));
+                }
+                window.requestAnimationFrame(update);
+            }
+        }
     </script>
 </head>
 <body>
@@ -190,10 +242,11 @@
             </div>
         </div>
         <div id="mid"></div>
-        <div id="right"></div>
+        <div id="right">
+            <canvas id="canvas" style="width: 100%; aspect-ratio: 2.5; background-color: var(--dark2);"></canvas>
+        </div>
     </div>
     <div id="img-container">
-        <!-- <img src="{{ url_for('stream') }}"></img> -->
     </div>
     <ul id="list"></ul>
 </body>

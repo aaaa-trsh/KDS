@@ -1,0 +1,8 @@
+Flask==1.1.2
+Flask_SocketIO==5.1.1
+numpy==1.21.3
+opencv_python_headless==4.5.1.48
+pynetworktables==2020.0.4
+opencv-contrib-python==4.5.4.58
+gevent==21.8.0
+gevent-websocket==0.10.1
