@@ -180,27 +180,6 @@ class Point {
     }
 }
 
-class PathPoint extends Point {
-    constructor(x, y, v) {
-        super(x, y);
-        this.vel = v;
-    }
-
-    static fromPoint(p, v) {
-        return new PathPoint(p.x, p.y, v);
-    }
-}
-
-class TrajectoryState extends Point {
-    constructor(x, y, c, v, a) {
-        super(x, y);
-        this.x = x;
-        this.y = y;
-        this.c = c;
-        this.v = v;
-        this.a = a;
-    }
-}
 
 class Polygon {
     constructor(points) {
@@ -367,3 +346,5 @@ class Polygon {
         return perimeter;
     }
 }
+
+export { Point, Polygon };

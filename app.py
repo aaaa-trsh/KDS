@@ -23,8 +23,8 @@ def index():
 def send_pos(message):
     global sample_rpos
     # print(wsTable.getNumberArray("pos", [random.random(), random.random()]))
-    emit('pos', {'data': str(wsTable.getNumberArray("pos", [0,0,0])).replace("(", "[").replace(")", "]")})
-    sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/50, sample_rpos[1] + math.sin(sample_rpos[2])/50, sample_rpos[2] + (random.random()-0.5)]
+    emit('pos', {'data': str(wsTable.getNumberArray("pos", sample_rpos)).replace("(", "[").replace(")", "]")})
+    sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/50, sample_rpos[1] + math.sin(sample_rpos[2])/50, sample_rpos[2] + (0.5 * (random.random()-0.5))]
 
 @socketio.on('obstacle')
 def send_obs(message):
