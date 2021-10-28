@@ -6,8 +6,9 @@ import math
 from networktables import NetworkTables
 import numpy as np
 import cv2
+
 NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected =", connected), immediateNotify=True)
-NetworkTables.initialize(server="roborio-6644-frc.local")
+NetworkTables.initialize(server="10.66.44.2")
 wsTable = NetworkTables.getTable("testws")
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -19,11 +20,16 @@ def index():
     return render_template('index.html')
 
 @socketio.on('pos')
-def test_message(message):
+def send_pos(message):
     global sample_rpos
     # print(wsTable.getNumberArray("pos", [random.random(), random.random()]))
-    emit('pos', {'data': str(wsTable.getNumberArray("pos", sample_rpos[:2])).replace("(", "[").replace(")", "]")})
+    emit('pos', {'data': str(wsTable.getNumberArray("pos", [0,0,0])).replace("(", "[").replace(")", "]")})
     sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/50, sample_rpos[1] + math.sin(sample_rpos[2])/50, sample_rpos[2] + (random.random()-0.5)]
+
+@socketio.on('obstacle')
+def send_obs(message):
+    print("".join(open("./map.in").readlines()))
+    emit('obstacle', {'data': "".join(open("./map.in").readlines())})
 
     
 @socketio.on('connect')
@@ -45,7 +51,7 @@ def gen_frames():
 
 @app.route('/stream')
 def stream():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return ""#Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0')

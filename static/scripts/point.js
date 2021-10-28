@@ -366,25 +366,4 @@ class Polygon {
         }
         return perimeter;
     }
-
-    draw() {
-        // let offsetPoints = this.getOffsetPoints(14);
-        // drawCircle(offsetPoints[0], 2);
-        // for (let i = 1; i < offsetPoints.length; i++) {
-        //     drawCircle(offsetPoints[i], 2);
-        //     drawLine(offsetPoints[i - 1], offsetPoints[i]);
-        // }
-        // drawLine(offsetPoints[offsetPoints.length - 1], offsetPoints[0]);
-
-
-        ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x, this.points[i].y);
-        }
-        ctx.lineTo(this.points[this.points.length - 1].x, this.points[this.points.length - 1].y);
-        ctx.closePath();
-        ctx.stroke();
-        
-    }
 }

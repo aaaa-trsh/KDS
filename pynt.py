@@ -1,7 +1,7 @@
 import time
 from networktables import NetworkTables
 NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected =", connected), immediateNotify=True)
-NetworkTables.initialize(server="roborio-6644-frc.local")
+NetworkTables.initialize(server="10.66.44.2")
 
 wsTable = NetworkTables.getTable("testws")
 
