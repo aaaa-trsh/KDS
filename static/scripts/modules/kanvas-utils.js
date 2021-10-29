@@ -140,5 +140,3 @@ let kAutoSize = (canvas) => {
         canvas.height = canvas.clientHeight;
     });
 }
-
-export { COLORS, rgbToHex, hexToRgb, lerpColor, kAutoSize };

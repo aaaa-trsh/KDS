@@ -5,7 +5,10 @@
     <link rel="stylesheet" href="../static/fonts/RobotoMono.css"/>
     <link rel="stylesheet" href="../static/style.css"/>
     <script src="../static/scripts/socket.io.js"></script>
-    <script type="module" src="../static/scripts/main.js"></script>
+    <script src="../static/scripts/modules/geom-utils.js"></script>
+    <script src="../static/scripts/modules/kanvas-utils.js"></script>
+    <script src="../static/scripts/modules/prm.js"></script>
+    <script src="../static/scripts/main.js"></script>
 </head>
 <body>
     <div id="top-bar">
@@ -15,22 +18,22 @@
     <div id="container">
         <div id="left">
             <div id="img-container">
-                <img id="img-stream"  src="{{ url_for('stream') }}" onerror="this.src='../static/images/no-cam.png'"></img>
+                <img id="img-stream"  src="../static/images/no-cam.png" onerror="this.src='../static/images/no-cam.png'"></img>
             </div>
             <div id="ws-logs-container">
                 <table id="ws-logs-header" class="head">
                     <tr>
-                        <td style="width: 15%;">Time</td>
-                        <td style="width: 10%;">Code</td>
-                        <td style="width: 75%;">Message</td>
+                        <td>Time</td>
+                        <td>Code</td>
+                        <td>Message</td>
                     </tr>
                 </table>
                 <div class="inner-table">
                 <table>
                     <tr>
-                        <td style="width: 15%;">12:12:12</td>
-                        <td style="width: 10%;">404</td>
-                        <td style="width: 75%;">test msg</td>
+                        <td>12:12:12</td>
+                        <td>404</td>
+                        <td>test msg</td>
                     </tr>
                 </table>
                 </div>

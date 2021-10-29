@@ -330,9 +330,22 @@ class Polygon {
                 Point.sub(this.points[prev], this.points[i]), 
             ) < 0 ? 1 : -1;
             let lineNormal = this.rightPerp(Point.sub(this.points[prev], this.points[i]).normalize())
-                
-            points.push(Point.add(this.points[i], Point.mul(lineNormal, offset * flip)));
-            points.push(Point.add(this.points[prev], Point.mul(lineNormal, offset * flip)));
+            let a = Point.add(this.points[i], Point.mul(lineNormal, offset * flip));
+            let b = Point.add(this.points[prev], Point.mul(lineNormal, offset * flip));
+        
+            points.push(a);
+            points.push(b);
+        }
+        let c = this.getCenter();
+        points = points.sort((a, b) => {
+            let aa = Math.atan2(a.y - c.y, a.x - c.x);
+            let bb = Math.atan2(b.y - c.y, b.x - c.x);
+            return aa - bb;
+        });
+
+        let len = points.length;
+        for (let i = 0; i < len-1; i+=2) {
+            points.push(Point.add(Point.mul(Point.sub(Point.lerp(points[i], points[(i + 1) % points.length], .5), this.points[i/2]).normalize(), offset), this.points[i/2]));
         }
         return points;
     }
@@ -346,5 +359,3 @@ class Polygon {
         return perimeter;
     }
 }
-
-export { Point, Polygon };

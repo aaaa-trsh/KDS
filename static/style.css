@@ -77,6 +77,10 @@ table tr td {
     flex: 1;
 }
 
+td:nth-child(1) { width: 15%; }
+td:nth-child(2) { width: 5%; }
+td:nth-child(3) { width: 75%; }
+
 table.head tr td {
     background: var(--dark2);
     /* padding: .5em 0 .1em .5em; */
