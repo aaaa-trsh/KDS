@@ -4,69 +4,48 @@ class Point {
         this.y = y;
     }
 
-    static fromArray(arr) {
-        return new Point(arr[0], arr[1]);
-    }
+    static fromArray(arr) { return new Point(arr[0], arr[1]); }
 
-    static dot(a, b) {
-        return a.x * b.x + a.y * b.y;
-    }
+    static dot(a, b) { return a.x * b.x + a.y * b.y; }
+    dot(b) { return Point.dot(this, b); }
 
-    static det(a, b) {
-        return a.x * b.y - a.y * b.x;
-    }
+    static det(a, b) { return a.x * b.y - a.y * b.x; }
+    det(b) { return Point.det(this, b); }
 
-    static sub(a, b) {
-        return new Point(a.x - b.x, a.y - b.y);
-    }
+    static sub(a, b) { return new Point(a.x - b.x, a.y - b.y); }
+    sub(b) { return Point.sub(this, b); }
 
-    static mul(a, b) {
-        return new Point(a.x * b, a.y * b);
-    }
+    static mul(a, b) { return new Point(a.x * b, a.y * b); }
+    mul(b) { return Point.mul(this, b); }
 
-    static mulXY(a, b) {
-        return new Point(a.x / b.x, a.y / b.y);
-    }
+    static mulXY(a, b) { return new Point(a.x / b.x, a.y / b.y); }
+    mulXY(b) { return Point.mulXY(this, b); }
 
-    static add(a, b) {
-        return new Point(a.x + b.x, a.y + b.y);
-    }
-
-    static div(a, b) {
-        return new Point(a.x / b, a.y / b);
-    }
+    static add(a, b) { return new Point(a.x + b.x, a.y + b.y); }
+    add(b) { return Point.add(this, b);}
     
-    static divXY(a, b) {
-        return new Point(a.x / b.x, a.y / b.y);
-    }
+    static div(a, b) { return new Point(a.x / b, a.y / b); }
+    div(b) { return Point.div(this, b); }
+    
+    static divXY(a, b) { return new Point(a.x / b.x, a.y / b.y); }
+    divXY(b) { return new Point(this.x / b.x, this.y / b.y); }
 
-    static pow(a, b) {
-        return new Point(Math.pow(a.x, b), Math.pow(a.y, b));
-    }        
+    static pow(a, b) { return new Point(Math.pow(a.x, b), Math.pow(a.y, b)); }
+    pow(b) { return Point.pow(this, b); }
 
-    static dist(a, b) {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-    }
+    static dist(a, b) { return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)); }
+    dist(b) { return Point.dist(this, b); }
 
-    static lerp(a, b, t) {
-        return new Point(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
-    }
+    static lerp(a, b, t) { return new Point(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); }
+    lerpTo (b, t) { return new Point(this.x + (b.x - this.x) * t, this.y + (b.y - this.y) * t); }
 
-    static cross(a, b) {
-        return (a.x * b.y) - (a.y * b.x);
-    }
+    static cross(a, b) { return (a.x * b.y) - (a.y * b.x); }
+    cross(b) { return Point.cross(this, b); }
 
-    static getAngle(a) {
-        return Math.atan2(a.y, a.x);
-    }
-
-    static angleTo(a, b) {
-        return Point.getAngle(a) - Point.getAngle(b);
-    }
-
-    static fromAngle(a) {
-        return new Point(Math.cos(a), Math.sin(a));
-    }
+    static angleTo(a, b) { return Point.getAngle(a) - Point.getAngle(b); }
+    angleTo(b) { return Point.angleTo(this, b); }
+    
+    static fromAngle(a) { return new Point(Math.cos(a), Math.sin(a)); }
 
     static linePointProjection(lineCrossPoint, slope, pointToProject) {
         let perpendicular = slope;
@@ -141,23 +120,12 @@ class Point {
         return [Point.add(new Point(x3, y3), offset), Point.sub(new Point(x3, y3), offset)];
     }
 
-    sign(x) {
-        return x == 0 ? 1 : Math.sign(x);
-    }
-
     
-    sideOfLine(a, b) {
-        return this.sign((b.x - a.x) * (this.y - a.y) - (b.y - a.y) * (this.x - a.x))
-    }
+    sideOfLine(a, b) { return this.sign((b.x - a.x) * (this.y - a.y) - (b.y - a.y) * (this.x - a.x)) }
 
-    normalize() {
-        let len = this.len();
-        return new Point(this.x / len, this.y / len);
-    }
+    normalize() { let len = this.len(); return new Point(this.x / len, this.y / len); }
 
-    len() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
+    len() { return Math.sqrt(this.x * this.x + this.y * this.y); }
 
     rotate(angle) {
         let cos = Math.cos(angle);
@@ -171,15 +139,43 @@ class Point {
         this.y = -d.y + o.y;
     }
 
-    equals(other) {
-        return this.x == other.x && this.y == other.y;
-    }
+    equals(other) { return this.x == other.x && this.y == other.y; }
 
-    getAngle() {
-        return Math.atan2(this.y, this.x);
-    }
+    getAngle() { return Math.atan2(this.y, this.x); }
 }
 
+class Line {
+    constructor(slope, intercept) {
+        this.slope = slope;
+        this.intercept = intercept;
+    }
+
+    static fromPoints(a, b) {
+        let slope = (b.y - a.y) / (b.x - a.x);
+        let intercept = a.y - slope * a.x;
+        return new Line(slope, intercept);
+    }
+
+    static fromPointSlope(p, slope) {
+        return new Line(slope, p.y - slope * p.x);
+    }
+
+    getPoint(x) {
+        return new Point(x, this.slope * x + this.intercept);
+    }
+    
+    static perpendicularBisector(a, b) {
+        let p = a.lerpTo(b, 0.5);
+        let s = (b.y - a.y) / (b.x - a.x);
+        return Line.fromPointSlope(p, -1 / s);
+    }
+
+    getIntersection(other) {
+        let x = (other.intercept - this.intercept) / (this.slope - other.slope);
+        let y = this.slope * x + this.intercept;
+        return new Point(x, y);
+    }
+}
 
 class Polygon {
     constructor(points) {
