@@ -1,0 +1,126 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>x</title>
+        <script type="text/javascript" src="./kanvas-utils.js"></script>
+        <script type="text/javascript" src="./geom-utils.js"></script>
+    <head>
+    <body>
+        <div id="container">
+            <canvas id="canvas" style="width:100%;height:100%;"></canvas>
+        </div>
+        <script>
+            
+            let canvas = document.getElementById("canvas");
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            let ctx = canvas.getContext("2d");
+            let pxPerMeter = 100;
+            
+            window.addEventListener("resize", function () {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+            });
+
+            class PID {
+                constructor(p, i, d, continuousInput) {
+                    this.p = p;
+                    this.i = i;
+                    this.d = d;
+                    this.lastError = 0;
+                    this.integral = 0;
+                    this.continuousInput = continuousInput;
+                }
+
+                calculate(error) {
+                    if (this.continuousInput) {
+                        error = Math.atan2(Math.sin(error), Math.cos(error));
+                    }
+                    this.integral += error;
+                    let derivative = error - this.lastError;
+                    this.lastError = error;
+                    return this.p * error + this.i * this.integral + this.d * derivative;
+                }
+            }
+            
+            let pid = new PID(.5, 0, 0);
+            class DifferentialDrive {
+                constructor(trackwidthMeters, lengthMeters) {
+                    this.trackwidthMeters = trackwidthMeters;
+                    this.lengthMeters = lengthMeters;
+                    this.position = new Point(0, 0);
+                    this.heading = 0;
+                }
+
+                update(leftVelocity, rightVelocity) {
+                    let left = leftVelocity * pxPerMeter;
+                    let right = rightVelocity * pxPerMeter;
+                    let d = (left + right) / 2;
+                    let w = (right - left) / this.trackwidthMeters;
+                    let x = d * Math.cos(this.heading);
+                    let y = d * Math.sin(this.heading);
+                    this.position.x += x;
+                    this.position.y += y;
+                    this.heading += w;
+                }
+            }
+
+            let robot = new DifferentialDrive(.5, .5);
+            let b = new Point(2 * pxPerMeter + canvas.width / 2, canvas.height / 2)
+            robot.position = new Point(canvas.width / 2, canvas.height / 2);
+            ctx.lineWidth = 1.1;
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let abBisect = Line.perpendicularBisector(
+                    robot.position,
+                    b
+                );
+
+                let center = Line.fromPointSlope(
+                    robot.position,
+                    Math.tan(robot.heading + Math.PI / 2)
+                ).getIntersection(
+                    abBisect
+                );
+
+                ctx.strokeStyle = "#0a05";
+                ctx.kDrawRay(
+                    robot.position,
+                    -robot.heading + Math.PI / 2,
+                    1000,
+                    0
+                );
+                ctx.stroke();
+
+                ctx.strokeStyle = "#0a05";
+                ctx.kDrawLine(
+                    abBisect.getPoint(0),
+                    abBisect.getPoint(canvas.width)
+                );
+                ctx.stroke();
+
+                ctx.fillStyle = "black";
+                ctx.kDrawSquare(center, 2);
+                ctx.fill();
+                ctx.kDrawSquare(b, 2);
+                ctx.fill();
+                ctx.kDrawCircle(center, center.dist(b)*2);
+                ctx.stroke();
+                
+                ctx.strokeStyle = "black";
+                robot.update(0.0099, 0.0101);
+                
+                ctx.kDrawRect(
+                    robot.position.add(new Point(robot.trackwidthMeters, robot.lengthMeters).div(2/pxPerMeter)), 
+                    robot.position.add(new Point(robot.trackwidthMeters, robot.lengthMeters).div(-2/pxPerMeter)), 
+                    robot.heading
+                );
+                // ctx.kDrawSquare(robot.position, );
+                ctx.stroke();
+                window.requestAnimationFrame(update);
+            }
+
+            update();
+        </script>
+    </body>
+</html>

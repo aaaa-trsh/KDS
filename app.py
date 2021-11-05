@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 import base64
 
-NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected =", connected), immediateNotify=True)
+NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected=", connected), immediateNotify=True)
 NetworkTables.initialize(server="10.66.44.2")
 wsTable = NetworkTables.getTable("testws")
 app = Flask(__name__)
@@ -16,38 +16,42 @@ socketio = SocketIO(app)
 
 sample_rpos = [0, 0, 0]
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@socketio.on('pos')
-def send_pos(message):
+@socketio.on("pos")
+def send_pos(_):
     global sample_rpos
-    # print(wsTable.getNumberArray("pos", [random.random(), random.random()]))
     frame = np.zeros((15, 30, 3), np.uint8)
     frame.fill((math.sin(time.time() * 10)+1) * 32)
-    ret, buffer = cv2.imencode('.jpg', frame)
-    emit('pos', {
-            'data': str(wsTable.getNumberArray("pos", sample_rpos)).replace("(", "[").replace(")", "]"),
-            'img': base64.b64encode(buffer).decode('utf-8')
+    ret, buffer = cv2.imencode(".jpg", frame)
+    emit("pos", {
+            "data": str(wsTable.getNumberArray("pos", sample_rpos)).replace("(", "[").replace(")", "]"),
+            "img": base64.b64encode(buffer).decode("utf-8")
         }
     )
-    sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/20, sample_rpos[1] + math.sin(sample_rpos[2])/20, sample_rpos[2] + (0.5 * (random.random()-0.6))]
+    sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/20, sample_rpos[1] + math.sin(sample_rpos[2])/20, sample_rpos[2] + (0.5 * (random.random()-0.45))]
 
-@socketio.on('obstacle')
-def send_obs(message):
+@socketio.on("obstacle")
+def send_obs(_):
     print("".join(open("./map.in").readlines()))
-    emit('obstacle', {'data': "".join(open("./map.in").readlines())})
+    emit("obstacle", {"data": "".join(open("./map.in").readlines())})
 
-    
-@socketio.on('connect')
+
+@socketio.on("path")
+def fwd_path(_):
+    print(_)
+    wsTable.putString("path", _["path"])
+
+
+@socketio.on("connect")
 def test_connect():
-    print('Client Connected')
-    emit('my response', {'data': 'Connected'})
+    print("Client Connected")
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def test_disconnect():
-    print('Client Disconnected')
+    print("Client Disconnected")
 
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0')
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0")

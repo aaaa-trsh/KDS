@@ -56,6 +56,30 @@ function screen2World(point) {
     return Point.add(Point.mul(point, pxToFeet), new Point(0, 0/*canvas.clientWidth/2, canvas.clientHeight/2*/));
 }
 
+function sendData(ele) {
+    let end = screen2World(new Point(-14, 7));
+    let path = prm.getPath(prm.closestOnMap(screen2World(points[points.length - 1])), prm.closestOnMap(end));
+    path.push(screen2World(points[points.length - 1]));
+    path.unshift(end);
+    path = path.reverse();
+    
+    console.log(ele.checked);
+
+    let cvt = [];
+    let cumAngle = 0;
+    for (let i = 0; i < path.length-1; i++) {
+        // let a = Point.getAngle(path[i], path[i+1]);
+        let b = Point.getAngle(path[i+1], path[i]);
+        let theta = 180/Math.PI * b;//(Math.abs(a) > Math.abs(b) ? b : a) * 180/Math.PI;
+        console.log(theta);
+        cvt.push(`${(Point.dist(path[i], path[i+1]) / pxToFeet).toFixed(3)},${(theta).toFixed(3)}`)
+    }
+    socket.emit('path', {
+        on: ele.checked,
+        path: cvt.join(' ') //path.map(p => `${(p.x / pxToFeet).toFixed(3)},${(p.y / pxToFeet).toFixed(3)}`).join(' ')
+    });
+}
+
 window.onload = function() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -108,7 +132,7 @@ window.onload = function() {
                     ctx.stroke();
                 }
             }
-            let end = screen2World(new Point(-9, 9));
+            let end = screen2World(new Point(-14, 7));
             let path = prm.getPath(prm.closestOnMap(screen2World(points[points.length - 1])), prm.closestOnMap(end));
             path.push(screen2World(points[points.length - 1]));
             path.unshift(end);

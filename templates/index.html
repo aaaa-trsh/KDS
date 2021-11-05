@@ -43,6 +43,8 @@
         <div id="mid"></div>
         <div id="right">
             <canvas id="canvas" style="width: 100%; aspect-ratio: 2.5; background-color: var(--dark2);"></canvas>
+            <button onclick="socket.emit('path', {on:false, path:''})">reset nt path</button>
+            <input type="checkbox" onclick="sendData(this)"></input>
         </div>
     </div>
 </body>
