@@ -121,7 +121,7 @@ class Point {
     }
 
     
-    sideOfLine(a, b) { return this.sign((b.x - a.x) * (this.y - a.y) - (b.y - a.y) * (this.x - a.x)) }
+    sideOfLine(a, b) { return Math.sign((b.x - a.x) * (this.y - a.y) - (b.y - a.y) * (this.x - a.x)) }
 
     normalize() { let len = this.len(); return new Point(this.x / len, this.y / len); }
 
@@ -166,8 +166,9 @@ class Line {
     
     static perpendicularBisector(a, b) {
         let p = a.lerpTo(b, 0.5);
-        let s = (b.y - a.y) / (b.x - a.x);
-        return Line.fromPointSlope(p, -1 / s);
+        let s = -(b.x - a.x) / (b.y - a.y);
+        return new Line(s, p.y - s * p.x);
+        // return Line.fromPointSlope(p, -1 / s);
     }
 
     getIntersection(other) {

@@ -129,6 +129,19 @@ CanvasRenderingContext2D.prototype.kDrawPoly = function(poly) {
     this.lineTo(poly.points[poly.points.length - 1].x, poly.points[poly.points.length - 1].y);
     this.closePath();
 }
+
+/**
+ * Add an event listerner to keep the mouse pose
+ */
+CanvasRenderingContext2D.prototype.kListenMousePos = function() {
+    this.mousePos = new Point(0, 0)
+    this.canvas.addEventListener("mousemove", function(e) {
+        this.getContext("2d").mousePos = new Point(e.clientX, e.clientY);
+        // console.log(this.getContext("2d"))
+    });
+    
+}
+
 /**
  * Sets a listener to automatizally size the canvas on window resize
  */
