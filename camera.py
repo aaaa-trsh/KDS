@@ -1,39 +1,25 @@
-from threading import Thread, Lock
+import cv2, queue, threading, time
 import cv2
 
-class CameraStream(object):
-    def __init__(self, src=0):
-        self.stream = cv2.VideoCapture(src)
+class VideoCapture:
+    def __init__(self, name):
+        self.cap = cv2.VideoCapture(name)
+        self.q = queue.Queue()
+        t = threading.Thread(target=self._reader)
+        t.daemon = True
+        t.start()
 
-        (self.grabbed, self.frame) = self.stream.read()
-        self.started = False
-        self.read_lock = Lock()
-
-    def start(self):
-        if self.started:
-            print("already started!!")
-            return None
-        self.started = True
-        self.thread = Thread(target=self.update, args=())
-        self.thread.start()
-        return self
-
-    def update(self):
-        while self.started:
-            (grabbed, frame) = self.stream.read()
-            self.read_lock.acquire()
-            self.grabbed, self.frame = grabbed, frame
-            self.read_lock.release()
+    def _reader(self):
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+            if not self.q.empty():
+                try:
+                    self.q.get_nowait()
+                except queue.Empty:
+                    pass
+            self.q.put(frame)
 
     def read(self):
-        self.read_lock.acquire()
-        frame = self.frame.copy()
-        self.read_lock.release()
-        return frame
-
-    def stop(self):
-        self.started = False
-        self.thread.join()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.stream.release()
+        return self.q.get()

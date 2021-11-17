@@ -6,9 +6,7 @@
         <script type="text/javascript" src="./static/scripts/modules/geom-utils.js"></script>
     <head>
     <body style="margin:0">
-        <!-- <div id="container"> -->
-            <canvas id="canvas" style="width:100%;height:100%;"></canvas>
-        <!-- </div> -->
+        <canvas id="canvas" style="width:100%;height:100%;"></canvas>
         <script>
             
             let canvas = document.getElementById("canvas");
@@ -50,7 +48,7 @@
                     this.trackwidthMeters = trackwidthMeters;
                     this.lengthMeters = lengthMeters;
                     this.position = new Point(0, 0);
-                    this.heading = 0;
+                    this.heading = 1;
                 }
 
                 update(leftVelocity, rightVelocity) {
@@ -77,17 +75,18 @@
                 }
             }
 
-            let robot = new DifferentialDrive(.5, .5);
-            let b = new Point(1000 + pxPerMeter, 600)
-            robot.position = new Point(500, 400);
+            let robot = new DifferentialDrive(.5, .6);
+            let canvasCenter = new Point(canvas.width/2, canvas.height/2);
+            let b = new Point(-pxPerMeter, -pxPerMeter).add(robot.position).add(canvasCenter);
+            robot.position = canvasCenter;
             console.log(robot.position);
             ctx.lineWidth = 1.1;
             let lastTime = performance.now()-10;
             let fps = 0;
             ctx.kListenMousePos();
             function update() {
-                b = ctx.mousePos;
-                console.log(ctx.mousePos)
+                // b = ctx.mousePos;
+                // console.log(ctx.mousePos)
                 fps = 1000/(performance.now() - lastTime);
                 lastTime = performance.now();
 
@@ -119,6 +118,7 @@
                 // let side = b.sideOfLine(proj, robot.position);
                 let relativeB = b.sub(robot.position);
                 let localB = new Point(Math.cos(-robot.heading) * relativeB.x - Math.sin(-robot.heading) * relativeB.y, Math.cos(-robot.heading) * relativeB.y + Math.sin(-robot.heading) * relativeB.x);
+                console.log(localB);
                 robot.updateByCurvature(velocity, 2*localB.y/Math.pow(robot.position.dist(b)*2, 2));
                 // b.x = robot.position.x
                 // console.log(robot.position)
