@@ -111,8 +111,7 @@ window.onload = function() {
         );
         ctx.fillStyle = COLORS.yellow;
         ctx.strokeStyle = COLORS.yellow;
-
-        if (ctx.mouseDown) {
+        if (ctx.mouseDown && Point.dist(world2Screen(ctx.mousePos, p), goalPoint) < 30) {
             goalPoint = world2Screen(ctx.mousePos, p);
             ctx.fillStyle += "44";
             ctx.setLineDash([4, 4]);
