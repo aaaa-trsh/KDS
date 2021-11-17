@@ -136,7 +136,7 @@ CanvasRenderingContext2D.prototype.kDrawPoly = function(poly) {
 CanvasRenderingContext2D.prototype.kListenMousePos = function() {
     this.mousePos = new Point(0, 0)
     this.canvas.addEventListener("mousemove", function(e) {
-        this.getContext("2d").mousePos = new Point(e.clientX, e.clientY);
+        this.getContext("2d").mousePos = new Point(e.offsetX, e.offsetY);
         // console.log(this.getContext("2d"))
     });
     
