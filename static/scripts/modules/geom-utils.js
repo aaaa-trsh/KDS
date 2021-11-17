@@ -142,6 +142,8 @@ class Point {
     equals(other) { return this.x == other.x && this.y == other.y; }
 
     getAngle() { return Math.atan2(this.y, this.x); }
+
+    asArray() { return [this.x, this.y]; }
 }
 
 class Line {
@@ -284,7 +286,6 @@ class Polygon {
     }
     lineCast(a, b)
     {
-
         let rayOrigin = a;
         let rayDirection = Point.sub(b, a).normalize();
         let maxDist = Point.dist(b, a);
@@ -354,5 +355,54 @@ class Polygon {
             perimeter += Point.dist(this.points[i], this.points[prev]);
         }
         return perimeter;
+    }
+}
+
+class CubicHermite {
+    constructor(points, tangents) {
+        this.points = points;
+        this.tangents = tangents;
+    }
+
+    interpolate(t, derivative) {
+        var n = this.points.length;    // number or points / tangents / knots
+        var d = this.points[0].length; // dimension
+        var v = new Array(d); // destination vector
+        
+        var t = t * (n - 1); // rescale t to [0, n-1]
+        var i0 = t | 0;        // truncate
+        var i1 = i0 + 1;
+    
+        if(i0 > n-1) throw new Error('out of bounds');
+        if(i0 === n-1) i1 = i0;
+    
+        var scale = i1 - i0;
+    
+        t = (t - i0) / scale;
+    
+        if(derivative) {
+            var t2 = t * t;
+            var h00 = 6 * t2 - 6 * t;
+            var h10 = 3 * t2 - 4 * t + 1;
+            var h01 = - 6 * t2 + 6 * t;
+            var h11 = 3 * t2 - 2 * t;
+        } else {
+            var t2 = t * t;
+            var it = 1 - t;
+            var it2 = it * it;
+            var tt = 2 * t;
+            var h00 = (1 + tt) * it2;
+            var h10 = t * it2;
+            var h01 = t2 * (3 - tt);
+            var h11 = t2 * (t - 1);
+        }
+    
+        for(var i = 0; i < d; i++) {
+            v[i] = h00 * this.points[i0][i] + 
+                h10 * this.tangents[i0][i] * scale +
+                h01 * this.points[i1][i] +
+                h11 * this.tangents[i1][i] * scale;
+        }
+        return v;
     }
 }

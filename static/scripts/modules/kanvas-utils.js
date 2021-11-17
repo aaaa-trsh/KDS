@@ -139,8 +139,23 @@ CanvasRenderingContext2D.prototype.kListenMousePos = function() {
         this.getContext("2d").mousePos = new Point(e.offsetX, e.offsetY);
         // console.log(this.getContext("2d"))
     });
-    
 }
+
+/**
+ * Add an event listerner to keep the mouse click
+ */
+CanvasRenderingContext2D.prototype.kListenMouseDown = function() {
+    this.mouseDown = false;
+    this.canvas.addEventListener("mousedown", function(e) {
+        console.log("mouse down");
+        this.getContext("2d").mouseDown = true;
+    });
+    this.canvas.addEventListener("mouseup", function(e) {
+        console.log("mouse up");
+        this.getContext("2d").mouseDown = false;
+    });
+}
+
 
 /**
  * Sets a listener to automatizally size the canvas on window resize

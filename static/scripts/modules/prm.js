@@ -20,6 +20,14 @@ class PRM {
         
         this.graph.push({p: newNode, n: neighbors, idx: i});
     }
+
+    obstacleCast(a, b) {
+        if (a === undefined || b === undefined) {
+            return false;
+        }
+        return !this.obstacles.some(ob => ob.offsetPoly.lineCast(a, b));
+    }
+
     removeFromWeb(node) { this.graph[node.idx].n = []; }
 
     closestOnMap(p) {

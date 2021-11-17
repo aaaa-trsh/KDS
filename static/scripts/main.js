@@ -7,6 +7,7 @@ let pxToFeet = 20;
 let frameCount = 0;
 const robotSize = [32, 28];
 let prm = null;
+let goalPoint = new Point(-3 * pxToFeet, 0);
 
 socket.emit('obstacle', {});
 socket.on('obstacle', function(msg) {
@@ -56,14 +57,27 @@ function screen2World(point) {
     return Point.add(Point.mul(point, pxToFeet), new Point(0, 0/*canvas.clientWidth/2, canvas.clientHeight/2*/));
 }
 
+function world2Screen(point, camCenter) {
+    return Point.sub(point, Point.mul(camCenter, -1));
+}
+
 function sendData(ele) {
-    let end = screen2World(new Point(2, 8.5));
+    let end = goalPoint;
     let path = prm.getPath(prm.closestOnMap(screen2World(points[points.length - 1])), prm.closestOnMap(end));
     // path.push(screen2World(points[points.length - 1]));
-    path.unshift(end);
     path = path.reverse();
     
-    console.log(ele.checked);
+    if (!prm.obstacleCast(screen2World(points[points.length - 1]), end)) {
+        for (let i = 0; i < path.length; i++) {
+            if (prm.obstacleCast(screen2World(points[points.length - 1]), path[i+1])) {
+                path.splice(i, 1);
+                i--;
+            }
+            if (prm.obstacleCast(path[i-1], end)) { path.splice(i, 1); }
+        }
+    }
+    else { path = []; }
+    path.push(end);
 
     let cvt = path.map(p => `${(p.x/pxToFeet).toFixed(3)},${(p.y/pxToFeet).toFixed(3)}`);
     console.log(cvt)
@@ -76,6 +90,8 @@ function sendData(ele) {
 window.onload = function() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    ctx.kListenMousePos();
+    ctx.kListenMouseDown();
 
     kAutoSize(canvas);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -83,12 +99,30 @@ window.onload = function() {
     
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        var p = Point.sub(screen2World(points[points.length - 1]), new Point(canvas.width/2, canvas.height/2));
+        ctx.translate(-p.x, -p.y);
 
         // ENTER WORLD SPACE
-        var p = screen2World(points[points.length - 1]);
-        p = Point.sub(p, new Point(canvas.width/2, canvas.height/2));
-        ctx.translate(-p.x, -p.y);
-        
+        ctx.kDrawRect(
+            Point.sub(goalPoint, new Point(6, 6)), 
+            Point.add(goalPoint, new Point(6, 6)), 
+            frameCount / 12
+        );
+        ctx.fillStyle = COLORS.yellow;
+        ctx.strokeStyle = COLORS.yellow;
+
+        if (ctx.mouseDown) {
+            goalPoint = world2Screen(ctx.mousePos, p);
+            ctx.fillStyle += "44";
+            ctx.setLineDash([4, 4]);
+        }
+
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
         ctx.lineWidth = 1;
 
         ctx.strokeStyle = COLORS.red;
@@ -107,12 +141,6 @@ window.onload = function() {
             ctx.kDrawPoly(obstacle.offsetPoly);
             ctx.fill();
             ctx.stroke();
-
-            // ctx.fillStyle = COLORS.lightBlue;
-            // obstacle.waypoints.forEach(p => {
-            //     ctx.kDrawCircle(p, 3);
-            //     ctx.fill();
-            // });
         });
         ctx.setLineDash([]);
 
@@ -125,15 +153,43 @@ window.onload = function() {
                     ctx.stroke();
                 }
             }
-            let end = screen2World(new Point(2, 8.5));
+            let end = goalPoint;
             let path = prm.getPath(prm.closestOnMap(screen2World(points[points.length - 1])), prm.closestOnMap(end));
-            path.push(screen2World(points[points.length - 1]));
-            path.unshift(end);
+            path = path.reverse();
+            // going from the end of the path to the start, remove all that can see end
+            // for (let i = path.length - 1; i >= 0; i--) {
+                
+            // }
+            if (!prm.obstacleCast(screen2World(points[points.length - 1]), end)) {
+                for (let i = 0; i < path.length; i++) {
+                    if (prm.obstacleCast(screen2World(points[points.length - 1]), path[i+1])) {
+                        path.splice(i, 1);
+                        i--;
+                    }
+                    if (prm.obstacleCast(path[i-1], end)) { path.splice(i, 1); }
+                }
+            }
+            else { path = []; }
+            
+
             ctx.strokeStyle = COLORS.yellow + "44";
             ctx.fillStyle = COLORS.yellow;
-            for (let i = 0; i < path.length - 1; i++) {
-                ctx.kDrawLine(path[i], path[i+1]);
+            path.unshift(screen2World(points[points.length - 1]));
+            path.push(end);
+            
+            var spline = new CubicHermite(path.map(p => p.asArray()), path.map((p, i) => Point.mul(i > 0 ? Point.sub(p, path[i-1]).normalize() : Point.fromAngle(heading), i > 0 ? Point.dist(p, path[i-1])/2 : -100).asArray()));
+            // console.log(spline.interpolate(.1))
+            var past = Point.fromArray(spline.interpolate(0))
+            for (let t = 0.01; t < 1; t += 0.01) {
+                var cur = Point.fromArray(spline.interpolate(t));
+                ctx.kDrawLine(past, cur);
+                past = cur;
                 ctx.stroke();
+                
+            }
+            for (let i = 1; i < path.length - 1; i++) {
+                // ctx.kDrawLine(path[i], path[i+1]);
+                // ctx.stroke();
                 ctx.kDrawCircle(path[i], 7);
                 ctx.fill();
             }
@@ -152,9 +208,7 @@ window.onload = function() {
         ctx.fillStyle = "#fff8";
 
         ctx.resetTransform();
-        
-        // drawRobot(new Point(canvas.width/2, canvas.height/2), 10, 5, heading + Math.PI / 2);
-        // drawRobot(new Point(canvas.width/2, canvas.height/2), heading + Math.PI / 2);
+
         ctx.kDrawRect(
             Point.add(Point.mul(new Point(robotSize[0]/12/2, robotSize[1]/12/2), pxToFeet), new Point(canvas.clientWidth/2, canvas.clientHeight/2)), 
             Point.add(Point.mul(new Point(-robotSize[0]/12/2, -robotSize[1]/12/2), pxToFeet), new Point(canvas.clientWidth/2, canvas.clientHeight/2)), 

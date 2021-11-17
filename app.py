@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 import base64
 from camera import VideoCapture
-import floor_seg
+# import floor_seg
 
 NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected=", connected), immediateNotify=True)
 # NetworkTables.initialize(server="localhost")
@@ -16,7 +16,8 @@ NetworkTables.initialize(server="10.66.44.2")
 wsTable = NetworkTables.getTable("testws")
 app = Flask(__name__)
 socketio = SocketIO(app)
-cap = VideoCapture('http://raspberrypi.local:8081/')
+isCam = False
+cap = VideoCapture('')#'http://raspberrypi.local:8081/')
 
 sample_rpos = [0, 0, 0]
 
@@ -27,8 +28,11 @@ def index():
 @socketio.on("pos")
 def send_pos(_):
     global sample_rpos
-    frame = cap.read()
-    print(frame.shape)
+    if isCam:
+        frame = cap.read()
+    else:
+        frame = np.zeros((1, 1, 3), np.uint8)
+    # print(frame.shape)
     _, buffer = cv2.imencode(".jpg", frame)
     emit("pos", {
             "data": str(wsTable.getNumberArray("pos", sample_rpos)).replace("(", "[").replace(")", "]"),
