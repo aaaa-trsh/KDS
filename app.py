@@ -9,6 +9,7 @@ import cv2
 import base64
 
 NetworkTables.addConnectionListener(lambda connected, info: print(info, "connected=", connected), immediateNotify=True)
+# NetworkTables.initialize(server="localhost")
 NetworkTables.initialize(server="10.66.44.2")
 wsTable = NetworkTables.getTable("testws")
 app = Flask(__name__)
@@ -28,7 +29,7 @@ def send_pos(_):
     ret, buffer = cv2.imencode(".jpg", frame)
     emit("pos", {
             "data": str(wsTable.getNumberArray("pos", sample_rpos)).replace("(", "[").replace(")", "]"),
-            "img": base64.b64encode(buffer).decode("utf-8")
+            "img": ""#base64.b64encode(buffer).decode("utf-8")
         }
     )
     sample_rpos = [sample_rpos[0] + math.cos(sample_rpos[2])/20, sample_rpos[1] + math.sin(sample_rpos[2])/20, sample_rpos[2] + (0.5 * (random.random()-0.45))]
@@ -41,7 +42,6 @@ def send_obs(_):
 
 @socketio.on("path")
 def fwd_path(_):
-    print(_)
     wsTable.putString("path", _["path"])
 
 
