@@ -14,8 +14,8 @@ socket.on('obstacle', function(msg) {
     let data = JSON.parse(msg.data);
     obstacles = data.map(x => {
             let poly = new Polygon(x.map(p => screen2World(Point.fromArray([-p[1] / 12, p[0] / 12]))));
-            let waypoints = poly.getOffsetPoints(Math.max(...robotSize) + pxToFeet / 2);
-            let offsetPoly = new Polygon(poly.getOffsetPoints(Math.max(...robotSize)));
+            let waypoints = poly.getOffsetPoints(2.2*pxToFeet);
+            let offsetPoly = new Polygon(poly.getOffsetPoints(2*pxToFeet));
             globalWaypoints.push(...waypoints);
 
             return {
